@@ -77,6 +77,27 @@ export default function Sidebar({
           </div>
         ) : (
           <div className="flex flex-col gap-2 max-h-[30vh] overflow-y-auto pr-1">
+            {showAddRepo && (
+              <div className="pt-1 pb-2">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <GitBranch size={14} className="text-text-muted" />
+                    </div>
+                    <Input
+                      placeholder="https://github.com/..."
+                      value={repoUrl}
+                      onChange={(e) => setRepoUrl(e.target.value)}
+                      className="pl-8 w-full text-xs py-1.5 bg-background border-border/50 focus:border-accent"
+                    />
+                  </div>
+                  <Button type="submit" isLoading={isIndexing} className="w-full text-xs py-1.5">
+                    Index Repository
+                  </Button>
+                </form>
+              </div>
+            )}
+            
             {repositories.map(repo => {
               const isActive = repositoryId === repo.id;
               return (
@@ -122,31 +143,6 @@ export default function Sidebar({
               );
             })}
             
-            {showAddRepo && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="pt-2 overflow-hidden"
-              >
-                <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <GitBranch size={14} className="text-text-muted" />
-                    </div>
-                    <Input
-                      placeholder="https://github.com/..."
-                      value={repoUrl}
-                      onChange={(e) => setRepoUrl(e.target.value)}
-                      className="pl-8 w-full text-xs py-1.5 bg-background border-border/50 focus:border-accent"
-                    />
-                  </div>
-                  <Button type="submit" isLoading={isIndexing} className="w-full text-xs py-1.5">
-                    Index Repository
-                  </Button>
-                </form>
-              </motion.div>
-            )}
           </div>
         )}
       </div>
@@ -164,6 +160,18 @@ export default function Sidebar({
           </div>
           
           <div className="flex flex-col gap-2 overflow-y-auto">
+            {activeConversationId === null && (
+              <button
+                className={`group relative text-left px-3 py-2.5 rounded-xl text-sm transition-all duration-300 border bg-accent/10 border-accent/30 text-text-main shadow-[0_2px_15px_-3px_rgba(0,245,212,0.15)] shadow-accent/5`}
+              >
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-accent rounded-r-full shadow-[0_0_8px_rgba(0,245,212,0.6)]"></div>
+                <div className="font-medium truncate pl-1">New Chat</div>
+                <div className={`text-[10px] opacity-60 mt-1 pl-1 transition-colors text-accent`}>
+                  Just now
+                </div>
+              </button>
+            )}
+
             {conversations && conversations.length > 0 ? (
               conversations.map(conv => (
                 <button
@@ -184,9 +192,9 @@ export default function Sidebar({
                   </div>
                 </button>
               ))
-            ) : (
+            ) : activeConversationId !== null ? (
               <div className="text-xs text-text-muted italic px-2">No past conversations</div>
-            )}
+            ) : null}
           </div>
         </div>
       )}

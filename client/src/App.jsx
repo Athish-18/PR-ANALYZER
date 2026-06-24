@@ -133,11 +133,34 @@ function App() {
       }
       setRepositoryName(name);
 
+      // Start an optimistic poll to grab the repo from the DB as soon as it's created,
+      // since fetchRepository blocks until the entire ingestion pipeline is done.
+      const optimisticInterval = setInterval(async () => {
+        try {
+          const repos = await fetch('/api/repos').then(r => r.json());
+          setRepositories(repos);
+          const newlyAdded = repos.find(r => r.name === name);
+          // Only set if we haven't already and the current repoId isn't it
+          setRepositoryId(currentId => {
+            if (newlyAdded && currentId !== newlyAdded.id) {
+              localStorage.setItem("activeRepositoryId", newlyAdded.id);
+              return newlyAdded.id;
+            }
+            return currentId;
+          });
+        } catch (e) {
+          // ignore background poll errors
+        }
+      }, 2000);
+
       const data = await fetchRepository(url);
+      
+      clearInterval(optimisticInterval);
+
       setRepositoryId(data.repositoryId);
       localStorage.setItem("activeRepositoryId", data.repositoryId);
       
-      // Refresh repositories list
+      // Refresh repositories list one final time
       const repos = await fetch('/api/repos').then(r => r.json());
       setRepositories(repos);
     } catch (err) {
