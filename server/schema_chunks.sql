@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS chunks (
+  id SERIAL PRIMARY KEY,
+  file_id INTEGER REFERENCES files(id) ON DELETE CASCADE,
+  chunk_index INTEGER NOT NULL,
+  chunk_text TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(file_id, chunk_index)
+);

@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS repositories (
+  id SERIAL PRIMARY KEY,
+  owner VARCHAR(255) NOT NULL,
+  repo_name VARCHAR(255) NOT NULL,
+  repo_url VARCHAR(255) UNIQUE NOT NULL,
+  default_branch VARCHAR(255) NOT NULL,
+  total_files INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(owner, repo_name)
+);
+
+CREATE TABLE IF NOT EXISTS files (
+  id SERIAL PRIMARY KEY,
+  repository_id INTEGER REFERENCES repositories(id) ON DELETE CASCADE,
+  file_path TEXT NOT NULL,
+  file_type VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(repository_id, file_path)
+);
