@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
-import { fetchRepository, getProgress, askRepository, reviewDiff } from './services/repositoryApi';
+import { fetchRepository, getProgress, askRepository, reviewDiff, getRepositories, getConversations, getConversationMessages } from './services/repositoryApi';
 
 function App() {
   const [repositoryId, setRepositoryId] = useState(null);
@@ -21,7 +21,7 @@ function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        const repos = await fetch('/api/repos').then(r => r.json());
+        const repos = await getRepositories();
         setRepositories(repos);
 
         if (repos.length > 0) {
@@ -64,7 +64,7 @@ function App() {
 
     const loadConversationData = async () => {
       try {
-        const convs = await fetch(`/api/repos/${repositoryId}/conversations?limit=20`).then(r => r.json());
+        const convs = await getConversations(repositoryId, 20);
         setConversations(convs);
 
         const convKey = `activeConversationId_${repositoryId}`;
@@ -77,7 +77,7 @@ function App() {
         }
 
         if (targetId) {
-          const data = await fetch(`/api/repos/${repositoryId}/conversations/${targetId}/messages`).then(r => r.json());
+          const data = await getConversationMessages(repositoryId, targetId);
           setMessages(data.messages || []);
           setConversationId(data.conversation.id);
           localStorage.setItem(convKey, data.conversation.id);
@@ -96,7 +96,7 @@ function App() {
 
   const handleSelectConversation = async (id) => {
     try {
-      const data = await fetch(`/api/repos/${repositoryId}/conversations/${id}/messages`).then(r => r.json());
+      const data = await getConversationMessages(repositoryId, id);
       setMessages(data.messages || []);
       setConversationId(id);
       localStorage.setItem(`activeConversationId_${repositoryId}`, id);
@@ -140,7 +140,7 @@ function App() {
       // since fetchRepository blocks until the entire ingestion pipeline is done.
       const optimisticInterval = setInterval(async () => {
         try {
-          const repos = await fetch('/api/repos').then(r => r.json());
+          const repos = await getRepositories();
           setRepositories(repos);
           const newlyAdded = repos.find(r => r.name === name);
           // Only set if we haven't already and the current repoId isn't it
@@ -164,7 +164,7 @@ function App() {
       localStorage.setItem("activeRepositoryId", data.repositoryId);
       
       // Refresh repositories list one final time
-      const repos = await fetch('/api/repos').then(r => r.json());
+      const repos = await getRepositories();
       setRepositories(repos);
     } catch (err) {
       setError(err.message);
@@ -192,8 +192,7 @@ function App() {
         localStorage.setItem(`activeConversationId_${repositoryId}`, data.conversationId);
         
         // Refresh conversation list to show the new one
-        fetch(`/api/repos/${repositoryId}/conversations?limit=20`)
-          .then(r => r.json())
+        getConversations(repositoryId, 20)
           .then(convs => setConversations(convs));
       }
 

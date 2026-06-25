@@ -1,0 +1,62 @@
+{
+  "deployId": "dep-d8ump6egvqtc73baoudg",
+  "service": {
+    "autoDeploy": "yes",
+    "autoDeployTrigger": "commit",
+    "branch": "main",
+    "buildFilter": {
+      "ignoredPaths": [
+        "client/**"
+      ],
+      "paths": [
+        "server/**"
+      ]
+    },
+    "createdAt": "2026-06-25T17:59:53.358029Z",
+    "dashboardUrl": "https://dashboard.render.com/web/srv-d8ump66gvqtc73baottg",
+    "id": "srv-d8ump66gvqtc73baottg",
+    "name": "pr-analyzer-backend",
+    "notifyOnFail": "default",
+    "ownerId": "tea-d5rd86c9c44c73e73n2g",
+    "repo": "https://github.com/Athish-18/PR-ANALYZER",
+    "rootDir": "server",
+    "serviceDetails": {
+      "buildPlan": "starter",
+      "cache": {
+        "profile": "no-cache"
+      },
+      "env": "node",
+      "envSpecificDetails": {
+        "buildCommand": "npm install",
+        "startCommand": "npm start"
+      },
+      "healthCheckPath": "",
+      "ipAllowList": [
+        {
+          "cidrBlock": "0.0.0.0/0",
+          "description": "everywhere"
+        }
+      ],
+      "maintenanceMode": {
+        "enabled": false,
+        "uri": ""
+      },
+      "numInstances": 1,
+      "openPorts": null,
+      "plan": "free",
+      "previews": {
+        "generation": "off"
+      },
+      "pullRequestPreviewsEnabled": "no",
+      "region": "oregon",
+      "runtime": "node",
+      "sshAddress": "srv-d8ump66gvqtc73baottg@ssh.oregon.render.com",
+      "url": "https://pr-analyzer-backend-hpoe.onrender.com"
+    },
+    "slug": "pr-analyzer-backend-hpoe",
+    "suspended": "not_suspended",
+    "suspenders": [],
+    "type": "web_service",
+    "updatedAt": "2026-06-25T17:59:53.358029Z"
+  }
+}

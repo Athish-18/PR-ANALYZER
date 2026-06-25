@@ -1,5 +1,15 @@
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
+export const getRepositories = async () => {
+  const response = await fetch(`${API_BASE}/api/repos`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch repositories');
+  }
+  return response.json();
+};
+
 export const fetchRepository = async (repoUrl) => {
-  const response = await fetch('/api/repos/fetch', {
+  const response = await fetch(`${API_BASE}/api/repos/fetch`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ repoUrl })
@@ -12,7 +22,7 @@ export const fetchRepository = async (repoUrl) => {
 };
 
 export const getProgress = async (repositoryId) => {
-  const response = await fetch(`/api/repos/${repositoryId}/progress`);
+  const response = await fetch(`${API_BASE}/api/repos/${repositoryId}/progress`);
   if (!response.ok) {
     throw new Error('Failed to fetch progress');
   }
@@ -20,7 +30,7 @@ export const getProgress = async (repositoryId) => {
 };
 
 export const askRepository = async (repositoryId, question, debug = false, conversationId = null) => {
-  const response = await fetch(`/api/repos/${repositoryId}/ask`, {
+  const response = await fetch(`${API_BASE}/api/repos/${repositoryId}/ask`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question, debug, conversationId })
@@ -33,7 +43,7 @@ export const askRepository = async (repositoryId, question, debug = false, conve
 };
 
 export const getConversations = async (repositoryId, limit = 20) => {
-  const response = await fetch(`/api/repos/${repositoryId}/conversations?limit=${limit}`);
+  const response = await fetch(`${API_BASE}/api/repos/${repositoryId}/conversations?limit=${limit}`);
   if (!response.ok) {
     throw new Error('Failed to fetch conversations');
   }
@@ -41,7 +51,7 @@ export const getConversations = async (repositoryId, limit = 20) => {
 };
 
 export const getConversationMessages = async (repositoryId, conversationId) => {
-  const response = await fetch(`/api/repos/${repositoryId}/conversations/${conversationId}/messages`);
+  const response = await fetch(`${API_BASE}/api/repos/${repositoryId}/conversations/${conversationId}/messages`);
   if (!response.ok) {
     throw new Error('Failed to fetch messages');
   }
@@ -49,7 +59,7 @@ export const getConversationMessages = async (repositoryId, conversationId) => {
 };
 
 export const reviewDiff = async (repositoryId, diff) => {
-  const response = await fetch(`/api/repos/${repositoryId}/review`, {
+  const response = await fetch(`${API_BASE}/api/repos/${repositoryId}/review`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ diff })
