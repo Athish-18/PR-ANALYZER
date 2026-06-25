@@ -17,12 +17,15 @@ export const parseGitHubUrl = (url) => {
 };
 
 export const fetchRepoMetadata = async (owner, repo) => {
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-    headers: {
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'Context-Aware-PR-Analyzer'
-    }
-  });
+  const headers = {
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'Context-Aware-PR-Analyzer'
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+  }
+
+  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -35,12 +38,15 @@ export const fetchRepoMetadata = async (owner, repo) => {
 };
 
 export const fetchRepoTree = async (owner, repo, defaultBranch) => {
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${defaultBranch}?recursive=1`, {
-    headers: {
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'Context-Aware-PR-Analyzer'
-    }
-  });
+  const headers = {
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'Context-Aware-PR-Analyzer'
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+  }
+
+  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${defaultBranch}?recursive=1`, { headers });
 
   if (!response.ok) {
     throw new Error(`GitHub API error fetching tree: ${response.statusText}`);
@@ -80,7 +86,12 @@ export const getRepoDetails = async (repoUrl) => {
 
 export const fetchFileContent = async (owner, repo, branch, filePath) => {
   const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
-  const response = await fetch(url);
+  const headers = {};
+  if (process.env.GITHUB_TOKEN) {
+    headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+  }
+
+  const response = await fetch(url, { headers });
   
   if (!response.ok) {
     throw new Error(`Failed to fetch ${filePath}: ${response.statusText}`);
