@@ -259,6 +259,7 @@ function App() {
         onSendMessage={handleSendMessage}
         isLoading={isAnswering}
         hasRepository={!!repositoryId}
+        repositoryId={repositoryId}
         onReviewDiff={handleReviewDiff}
         isReviewing={isReviewing}
         reviewResult={reviewResult}

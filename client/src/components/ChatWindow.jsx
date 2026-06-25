@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 
-export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepository, onReviewDiff, isReviewing, reviewResult }) {
+export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepository, repositoryId, onReviewDiff, isReviewing, reviewResult }) {
   const [input, setInput] = useState('');
   const [mode, setMode] = useState('chat');
   const [diffInput, setDiffInput] = useState('');
@@ -15,6 +15,12 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepo
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Reset PR Review state when repository changes
+  useEffect(() => {
+    setDiffInput('');
+    setMode('chat');
+  }, [repositoryId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
