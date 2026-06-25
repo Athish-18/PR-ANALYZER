@@ -5,6 +5,7 @@ import { processEmbeddings } from '../controllers/embedding.controller.js';
 import { searchRepository, debugSearchRepository } from '../controllers/search.controller.js';
 import { askRepository } from '../controllers/rag.controller.js';
 import { getConversations, getConversationMessages } from '../controllers/chat.controller.js';
+import { reviewDiffController } from '../controllers/review.controller.js';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post('/:repositoryId/embed', processEmbeddings);
 router.post('/:repositoryId/search', searchRepository);
 router.post('/:repositoryId/debug-search', debugSearchRepository);
 router.post('/:repositoryId/ask', askRepository);
+router.post('/:repositoryId/review', reviewDiffController);
 
 // Chat & Conversation Routes
 router.get('/:repositoryId/conversations', getConversations);

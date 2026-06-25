@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 
-export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepository }) {
+export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepository, onReviewDiff, isReviewing, reviewResult }) {
   const [input, setInput] = useState('');
+  const [mode, setMode] = useState('chat');
+  const [diffInput, setDiffInput] = useState('');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -24,9 +26,31 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepo
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background relative">
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 pb-32 flex flex-col items-center">
-        <div className="w-full max-w-[850px] flex-1">
+      {/* Tabs */}
+      {hasRepository && (
+        <div className="flex justify-center pt-4 pb-2 border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
+          <div className="flex bg-card border border-border rounded-lg p-1">
+            <button 
+              onClick={() => setMode('chat')}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${mode === 'chat' ? 'bg-accent/10 text-accent' : 'text-text-muted hover:text-text-main'}`}
+            >
+              Chat
+            </button>
+            <button 
+              onClick={() => setMode('review')}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${mode === 'review' ? 'bg-accent/10 text-accent' : 'text-text-muted hover:text-text-main'}`}
+            >
+              PR Review
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      {mode === 'chat' ? (
+        <>
+          <div className="flex-1 overflow-y-auto p-6 pb-32 flex flex-col items-center">
+            <div className="w-full max-w-[850px] flex-1">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center mt-20">
               <h2 className="text-3xl font-semibold text-text-main mb-10 tracking-tight">Understand your codebase</h2>
@@ -97,6 +121,49 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepo
           </button>
         </form>
       </div>
+        </>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center">
+          <div className="w-full max-w-[850px] flex flex-col gap-6">
+            <h2 className="text-xl font-semibold text-text-main">Review Git Diff</h2>
+            
+            <div className="bg-card border border-border rounded-xl p-1 focus-within:border-accent transition-colors shadow-sm">
+              <textarea
+                value={diffInput}
+                onChange={(e) => setDiffInput(e.target.value)}
+                placeholder="Paste your git diff here..."
+                className="w-full bg-transparent border-none p-4 text-sm text-text-main placeholder-text-muted focus:outline-none resize-y min-h-[200px] font-mono leading-relaxed"
+                disabled={isReviewing}
+              />
+            </div>
+            
+            <button 
+              onClick={() => onReviewDiff(diffInput)}
+              disabled={!diffInput.trim() || isReviewing}
+              className="self-end px-6 py-2.5 bg-accent/10 text-accent font-medium rounded-lg hover:bg-accent/20 disabled:opacity-50 transition-all shadow-sm"
+            >
+              {isReviewing ? 'Analyzing...' : 'Analyze Diff'}
+            </button>
+
+            {isReviewing && (
+              <div className="mt-4">
+                <MessageBubble role="assistant" content="Analyzing diff and generating review..." />
+              </div>
+            )}
+
+            {reviewResult && !isReviewing && (
+              <div className="mt-4 pb-10 border-t border-border/50 pt-6">
+                <h3 className="text-lg font-medium text-text-main mb-4">Review Result</h3>
+                <MessageBubble 
+                  role="assistant" 
+                  content={reviewResult.review} 
+                  diagnostics={reviewResult.diagnostics}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

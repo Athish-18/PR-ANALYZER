@@ -47,3 +47,16 @@ export const getConversationMessages = async (repositoryId, conversationId) => {
   }
   return response.json();
 };
+
+export const reviewDiff = async (repositoryId, diff) => {
+  const response = await fetch(`/api/repos/${repositoryId}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ diff })
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to generate review');
+  }
+  return response.json();
+};

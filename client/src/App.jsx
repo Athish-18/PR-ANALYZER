@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
-import { fetchRepository, getProgress, askRepository } from './services/repositoryApi';
+import { fetchRepository, getProgress, askRepository, reviewDiff } from './services/repositoryApi';
 
 function App() {
   const [repositoryId, setRepositoryId] = useState(null);
@@ -14,6 +14,8 @@ function App() {
   const [error, setError] = useState(null);
   const [conversationId, setConversationId] = useState(null);
   const [conversations, setConversations] = useState([]);
+  const [isReviewing, setIsReviewing] = useState(false);
+  const [reviewResult, setReviewResult] = useState(null);
 
   // Fetch all repositories on mount
   useEffect(() => {
@@ -116,6 +118,7 @@ function App() {
     setMessages([]);
     setConversations([]);
     setProgress(null);
+    setReviewResult(null);
     localStorage.setItem("activeRepositoryId", id);
   };
 
@@ -212,6 +215,21 @@ function App() {
     }
   };
 
+  const handleReviewDiff = async (diffText) => {
+    if (!repositoryId) return;
+    setIsReviewing(true);
+    setError(null);
+    setReviewResult(null);
+    try {
+      const data = await reviewDiff(repositoryId, diffText);
+      setReviewResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsReviewing(false);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Error Banner - absolute positioned */}
@@ -241,6 +259,9 @@ function App() {
         onSendMessage={handleSendMessage}
         isLoading={isAnswering}
         hasRepository={!!repositoryId}
+        onReviewDiff={handleReviewDiff}
+        isReviewing={isReviewing}
+        reviewResult={reviewResult}
       />
     </div>
   );
