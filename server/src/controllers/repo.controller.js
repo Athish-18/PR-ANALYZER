@@ -145,6 +145,6 @@ export const getRepositories = async (req, res) => {
     res.json(repos);
   } catch (error) {
     console.error("getRepositories error:", error);
-    res.status(500).json({ error: String(error) });
+    res.status(500).json({ error: error.name || String(error), details: error.errors ? error.errors.map(e => String(e)) : [] });
   }
 };
