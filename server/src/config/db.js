@@ -19,6 +19,6 @@ export const connectDB = async () => {
     client.release();
   } catch (error) {
     console.error('Database connection failed:', error.message);
-    process.exit(1);
+    global.dbError = error.message;
   }
 };

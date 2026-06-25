@@ -1,6 +1,7 @@
 export const getHealth = (req, res) => {
-  res.json({
-    success: true,
-    message: "Server is healthy",
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    dbError: global.dbError || null
   });
 };
