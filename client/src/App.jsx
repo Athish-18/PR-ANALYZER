@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
-import { fetchRepository, getProgress, askRepository, reviewDiff, getRepositories, getConversations, getConversationMessages } from './services/repositoryApi';
+import { fetchRepository, getProgress, askRepository, reviewDiff, reviewGithubPr, getRepositories, getConversations, getConversationMessages } from './services/repositoryApi';
 
 function App() {
   const [repositoryId, setRepositoryId] = useState(null);
@@ -229,6 +229,21 @@ function App() {
     }
   };
 
+  const handleReviewGithubPr = async (prUrl) => {
+    if (!repositoryId) return;
+    setIsReviewing(true);
+    setError(null);
+    setReviewResult(null);
+    try {
+      const data = await reviewGithubPr(repositoryId, prUrl);
+      setReviewResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsReviewing(false);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Error Banner - absolute positioned */}
@@ -260,6 +275,7 @@ function App() {
         hasRepository={!!repositoryId}
         repositoryId={repositoryId}
         onReviewDiff={handleReviewDiff}
+        onReviewGithubPr={handleReviewGithubPr}
         isReviewing={isReviewing}
         reviewResult={reviewResult}
       />

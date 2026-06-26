@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 
-export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepository, repositoryId, onReviewDiff, isReviewing, reviewResult }) {
+export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepository, repositoryId, onReviewDiff, onReviewGithubPr, isReviewing, reviewResult }) {
   const [input, setInput] = useState('');
   const [mode, setMode] = useState('chat');
+  const [reviewInputMode, setReviewInputMode] = useState('github');
   const [diffInput, setDiffInput] = useState('');
+  const [prUrlInput, setPrUrlInput] = useState('');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -19,7 +21,9 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepo
   // Reset PR Review state when repository changes
   useEffect(() => {
     setDiffInput('');
+    setPrUrlInput('');
     setMode('chat');
+    setReviewInputMode('github');
   }, [repositoryId]);
 
   const handleSubmit = (e) => {
@@ -131,24 +135,58 @@ export default function ChatWindow({ messages, onSendMessage, isLoading, hasRepo
       ) : (
         <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center">
           <div className="w-full max-w-[850px] flex flex-col gap-6">
-            <h2 className="text-xl font-semibold text-text-main">Review Git Diff</h2>
-            
-            <div className="bg-card border border-border rounded-xl p-1 focus-within:border-accent transition-colors shadow-sm">
-              <textarea
-                value={diffInput}
-                onChange={(e) => setDiffInput(e.target.value)}
-                placeholder="Paste your git diff here..."
-                className="w-full bg-transparent border-none p-4 text-sm text-text-main placeholder-text-muted focus:outline-none resize-y min-h-[200px] font-mono leading-relaxed"
-                disabled={isReviewing}
-              />
+            <div className="flex items-center justify-between mt-2">
+              <h2 className="text-xl font-semibold text-text-main">Pull Request Review</h2>
+              <div className="flex bg-card border border-border rounded-lg p-1 text-sm font-medium">
+                <button 
+                  onClick={() => setReviewInputMode('github')}
+                  className={`px-3 py-1.5 rounded-md transition-colors ${reviewInputMode === 'github' ? 'bg-accent/10 text-accent' : 'text-text-muted hover:text-text-main'}`}
+                >
+                  GitHub Pull Request
+                </button>
+                <button 
+                  onClick={() => setReviewInputMode('paste')}
+                  className={`px-3 py-1.5 rounded-md transition-colors ${reviewInputMode === 'paste' ? 'bg-accent/10 text-accent' : 'text-text-muted hover:text-text-main'}`}
+                >
+                  Paste Diff
+                </button>
+              </div>
             </div>
             
+            {reviewInputMode === 'paste' ? (
+              <div className="bg-card border border-border rounded-xl p-1 focus-within:border-accent transition-colors shadow-sm">
+                <textarea
+                  value={diffInput}
+                  onChange={(e) => setDiffInput(e.target.value)}
+                  placeholder="Paste your git diff here..."
+                  className="w-full bg-transparent border-none p-4 text-sm text-text-main placeholder-text-muted focus:outline-none resize-y min-h-[200px] font-mono leading-relaxed"
+                  disabled={isReviewing}
+                />
+              </div>
+            ) : (
+              <div className="bg-card border border-border rounded-xl p-1 focus-within:border-accent transition-colors shadow-sm">
+                <input
+                  type="url"
+                  value={prUrlInput}
+                  onChange={(e) => setPrUrlInput(e.target.value)}
+                  placeholder="https://github.com/owner/repo/pull/123"
+                  className="w-full bg-transparent border-none p-4 text-[15px] text-text-main placeholder-text-muted focus:outline-none"
+                  disabled={isReviewing}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && prUrlInput.trim()) {
+                      onReviewGithubPr(prUrlInput.trim());
+                    }
+                  }}
+                />
+              </div>
+            )}
+            
             <button 
-              onClick={() => onReviewDiff(diffInput)}
-              disabled={!diffInput.trim() || isReviewing}
+              onClick={() => reviewInputMode === 'paste' ? onReviewDiff(diffInput) : onReviewGithubPr(prUrlInput.trim())}
+              disabled={(reviewInputMode === 'paste' ? !diffInput.trim() : !prUrlInput.trim()) || isReviewing}
               className="self-end px-6 py-2.5 bg-accent/10 text-accent font-medium rounded-lg hover:bg-accent/20 disabled:opacity-50 transition-all shadow-sm"
             >
-              {isReviewing ? 'Analyzing...' : 'Analyze Diff'}
+              {isReviewing ? 'Analyzing...' : 'Analyze'}
             </button>
 
             {isReviewing && (

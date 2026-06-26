@@ -1,19 +1,28 @@
-import { reviewDiff } from '../services/review.service.js';
+import { reviewDiff, reviewGithubPr } from '../services/review.service.js';
 
 export const reviewDiffController = async (req, res) => {
   try {
     const { repositoryId } = req.params;
-    const { diff } = req.body;
+    const { type = 'diff', diff, prUrl } = req.body;
 
     if (!repositoryId) {
       return res.status(400).json({ error: 'repositoryId is required' });
     }
 
-    if (!diff || typeof diff !== 'string' || diff.trim().length === 0) {
-      return res.status(400).json({ error: 'Valid diff text is required' });
-    }
+    let result;
 
-    const result = await reviewDiff(parseInt(repositoryId, 10), diff);
+    if (type === 'github') {
+      if (!prUrl || typeof prUrl !== 'string' || prUrl.trim().length === 0) {
+        return res.status(400).json({ error: 'Valid GitHub PR URL is required' });
+      }
+      result = await reviewGithubPr(parseInt(repositoryId, 10), prUrl.trim());
+    } else {
+      // Default to diff paste
+      if (!diff || typeof diff !== 'string' || diff.trim().length === 0) {
+        return res.status(400).json({ error: 'Valid diff text is required' });
+      }
+      result = await reviewDiff(parseInt(repositoryId, 10), diff);
+    }
     
     res.json(result);
   } catch (error) {

@@ -60,3 +60,9 @@ export const getAllRepositories = async () => {
     embeddingsCreated: parseInt(row.embeddings_created, 10)
   }));
 };
+
+export const getRepositoryById = async (id) => {
+  const query = `SELECT id, owner, repo_name as repo FROM repositories WHERE id = $1`;
+  const result = await pool.query(query, [id]);
+  return result.rows[0] || null;
+};

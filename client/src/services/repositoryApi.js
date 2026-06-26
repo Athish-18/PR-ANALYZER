@@ -62,7 +62,20 @@ export const reviewDiff = async (repositoryId, diff) => {
   const response = await fetch(`${API_BASE}/api/repos/${repositoryId}/review`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ diff })
+    body: JSON.stringify({ type: 'diff', diff })
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to generate review');
+  }
+  return response.json();
+};
+
+export const reviewGithubPr = async (repositoryId, prUrl) => {
+  const response = await fetch(`${API_BASE}/api/repos/${repositoryId}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'github', prUrl })
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

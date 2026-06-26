@@ -99,3 +99,55 @@ export const fetchFileContent = async (owner, repo, branch, filePath) => {
   
   return response.text();
 };
+
+export const parsePullRequestUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname !== 'github.com') return null;
+    
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    if (parts.length < 4 || parts[2] !== 'pull') return null;
+    
+    return { 
+      owner: parts[0], 
+      repo: parts[1],
+      pullNumber: parseInt(parts[3], 10)
+    };
+  } catch (error) {
+    return null; // Invalid URL
+  }
+};
+
+export const fetchPullRequestDiff = async (prUrl) => {
+  const parsed = parsePullRequestUrl(prUrl);
+  if (!parsed) {
+    throw new Error('Invalid GitHub Pull Request URL');
+  }
+
+  const { owner, repo, pullNumber } = parsed;
+
+  const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}`;
+  const headers = {
+    'Accept': 'application/vnd.github.v3.diff',
+    'User-Agent': 'Context-Aware-PR-Analyzer'
+  };
+  
+  if (process.env.GITHUB_TOKEN) {
+    headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+  }
+
+  const response = await fetch(url, { headers });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch PR diff: ${response.statusText}`);
+  }
+  
+  const diff = await response.text();
+
+  return {
+    owner,
+    repo,
+    pullNumber,
+    diff
+  };
+};
