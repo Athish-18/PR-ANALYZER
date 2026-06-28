@@ -1,4 +1,4 @@
-import { reviewDiff, reviewGithubPr } from '../services/review.service.js';
+import { appGraph } from '../graph/workflow.graph.js';
 
 export const reviewDiffController = async (req, res) => {
   try {
@@ -9,22 +9,28 @@ export const reviewDiffController = async (req, res) => {
       return res.status(400).json({ error: 'repositoryId is required' });
     }
 
-    let result;
-
     if (type === 'github') {
       if (!prUrl || typeof prUrl !== 'string' || prUrl.trim().length === 0) {
         return res.status(400).json({ error: 'Valid GitHub PR URL is required' });
       }
-      result = await reviewGithubPr(parseInt(repositoryId, 10), prUrl.trim());
     } else {
-      // Default to diff paste
       if (!diff || typeof diff !== 'string' || diff.trim().length === 0) {
         return res.status(400).json({ error: 'Valid diff text is required' });
       }
-      result = await reviewDiff(parseInt(repositoryId, 10), diff);
+      if (diff.trim().startsWith('http://') || diff.trim().startsWith('https://')) {
+        return res.status(400).json({ error: 'Please use the "GitHub Pull Request" option to analyze URLs.' });
+      }
     }
+
+    const state = await appGraph.invoke({
+      workflow: 'review',
+      repositoryId: parseInt(repositoryId, 10),
+      payload: { type, diff, prUrl },
+      context: {},
+      metadata: {}
+    });
     
-    res.json(result);
+    res.json(state.result);
   } catch (error) {
     console.error("reviewDiffController error:", error);
     res.status(500).json({ error: error.message || "Failed to generate review" });
